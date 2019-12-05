@@ -124,3 +124,4 @@ console.log(`For a total mass of 1969 the module is ${calculateModule2(1969)}`)
 console.log(`For a total mass of 100756 the module is ${calculateModule2(100756)}`)
 
 console.log(`1-2 answer:`, input.reduce((total, mass) => total + calculateModule2(mass), 0));
+//
