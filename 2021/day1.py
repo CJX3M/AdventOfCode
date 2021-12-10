@@ -1,10 +1,11 @@
 import os
 import sys
 
+data = ""
+
 strPath = os.path.join(sys.path[0], "day1Input.txt")
 with open(strPath) as fileObject:
     data = fileObject.read().split('\n')
-
 
 # Part 1
 def part1(data):
