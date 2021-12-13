@@ -1,11 +1,6 @@
-import os
-import sys
+from openData import getData
 
-data = ""
-
-strPath = os.path.join(sys.path[0], "day1Input.txt")
-with open(strPath) as fileObject:
-    data = fileObject.read().split('\n')
+data = getData("day1Input.txt")
 
 # Part 1
 def part1(data):
