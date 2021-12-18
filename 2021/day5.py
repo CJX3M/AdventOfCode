@@ -1,4 +1,3 @@
-from typing import overload
 from openData import getData
 
 def printField(field):
