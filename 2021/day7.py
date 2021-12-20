@@ -14,10 +14,10 @@ def getFuelConsumption2(crabs, position):
 numbers = [int(i) for i in getData("day7.txt")[0].split(',')]
 #numbers = [16,1,2,0,4,2,7,1,2,14]
 
-median = round(numpy.median([i for i in numbers]))
+median = round(numpy.median(numbers))
 
 crabs = [{"position": int(i), "fuel": 0} for i in numbers]
 
 print("Part 1: ", getFuelConsumption(crabs, median))
-print("Part 2 Mean Ceil: ", getFuelConsumption2(crabs, round(numpy.mean([i for i in numbers]))))
-print("Part 2 Mean Floor: ", getFuelConsumption2(crabs, int(numpy.mean([i for i in numbers]))))
+print("Part 2 Mean Ceil: ", getFuelConsumption2(crabs, round(numpy.mean(numbers))))
+print("Part 2 Mean Floor: ", getFuelConsumption2(crabs, int(numpy.mean(numbers))))
