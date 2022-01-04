@@ -26,17 +26,16 @@ def applySteps(polymers, steps):
             polymers[pol[0]] -= pol[1]
     singles = defaultdict(list)
 
-    for template in templates:
-        for insert in template["insertion"]:
-            for item in insert:
-                if not item in singles:
-                    singles[item] = 0
-
-    for key in singles.keys():
-        for pol in [p for p in polymers.items() if key in p[0]]:
-            singles[key] += pol[1]
-            if pol[0][0] == key and pol[0][1] == key:
-                singles[key] += pol[1]
+    for pol in polymers.items():
+        key, value = pol
+        if not key[0] in singles:
+            singles[key[0]] = 0
+        singles[key[0]] += value
+        if not key[1] in singles:
+            singles[key[1]] = 0
+        singles[key[1]] += value
+        if key[0] == key[1]:
+            singles[key[0]] += 1
     singles[polymer[0]] += 1
     singles[polymer[-1]] += 1
 
