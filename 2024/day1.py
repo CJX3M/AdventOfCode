@@ -13,22 +13,18 @@ for pair in input:
 left.sort()
 right.sort()
 
-dif = []
+dif = 0
 
 for i, item in enumerate(left):
-    dif.append(abs(left[i] - right[i]))
+    dif += abs(left[i] - right[i])
 
-distance = sum(dif)
+print("\n\rPart 1 Result: ", dif)
 
-print("\n\rPart 1 Result: ", distance)
-
-sims = []
+similarity = 0
 
 for item in left:
     amount = right.count(item)
-    sims.append(item * amount)
-
-similarity = sum(sims)
+    similarity += item * amount
 
 print("\n\rPart 2 Result:", similarity)
 
