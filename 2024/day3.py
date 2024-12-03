@@ -15,11 +15,10 @@ for match in matches:
     if match == "don't":
         do = False
     if "mul" in match:
-        ints = re.findall("-?\\d+", match)
-        if len(ints) == 2:
-            part1result += int(ints[0]) * int(ints[1])
-            if do:
-                part2result += int(ints[0]) * int(ints[1])
+        x, y = map(int, match[4:-1].split(","))
+        part1result += x * y
+        if do:
+            part2result += x * y
         
 
 print("\n\rResult: ", part1result)
