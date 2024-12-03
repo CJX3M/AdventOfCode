@@ -12,9 +12,9 @@ do = True
 for match in matches:
     if match == "do":
         do = True
-    if match == "don't":
+    elif match == "don't":
         do = False
-    if "mul" in match:
+    else:
         x, y = map(int, match[4:-1].split(","))
         part1result += x * y
         if do:
