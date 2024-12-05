@@ -1,59 +1,106 @@
 from openData import getData
 
+def searchHorizontal(grid, rows, word):
+    res = 0
+    reverseWord = word[::-1]
+
+    for row in range(rows):
+        if word in grid[row]:
+            res += grid[row].count(word)
+        if reverseWord in grid[row]:
+            res += grid[row].count(reverseWord)
+    
+    return res
+
+def searchVertical(grid, rows, columns, word):
+    rotateGrid = []
+    # lets rotate 90 degrees the grid
+    for i in range(rows):
+        vertical = ""
+        for j in range(columns):
+            vertical += grid[j][i]
+
+        rotateGrid.append(vertical)
+
+    return searchHorizontal(rotateGrid, rows, word)
+
 def searchWord(grid, word):
     rows = len(grid)
     columns = len(grid[0])
-
-    ans = []
-
-    for row in range(rows-4):
-        for col in range(columns-4):
-            ans.append(searchGrid(grid, word , row, col))
     
-    return ans
+    res = 0
 
-def getMask(grid, currRow, currCol):
+    # look for horizontal matches
+    res += searchHorizontal(grid, rows, word)
+    # look for vertical matches
+    res += searchVertical(grid, rows, columns, word)
+
+    wordLen = len(word)
+    # look for diagonal
+    for row in range(rows):
+        if wordLen + row > rows:
+            break
+        for col in range(columns):
+            if wordLen + col > columns:
+                break
+            res += searchGrid(grid, word , row, col)
+    
+    return res
+
+def getMask(grid, currRow, currCol, size):
     mask = []
 
-    for row in range(4):
-        mask.append(grid[currRow+row][currCol:4])
+    for row in range(size):
+        mask.append(grid[currRow+row][currCol:currCol+size])
 
     return mask
 
-
-
 def searchGrid(grid, word, row, col):
-    mask = getMask(grid, row, col)
-    # rows = len(grid)
-    # columns = len(grid[0])
+    mask = getMask(grid, row, col, 4)
 
-    # if grid[row][col] != word[0]:
-    #     return False
+    ocurrences = 0
+    reverseWord = word[::-1]
+
+    diagonal = mask[0][0] + mask[1][1] + mask[2][2] + mask[3][3]
+    inverseDiagonal = mask[0][3] + mask[1][2] + mask[2][1] + mask[3][0]
+
+    if diagonal == word:
+        ocurrences += 1
+    if inverseDiagonal == word:
+        ocurrences += 1
+    if diagonal == reverseWord:
+        ocurrences += 1
+    if inverseDiagonal == reverseWord:
+        ocurrences += 1
+
+    return ocurrences
+
+def searchXMases(grid, word):
+    rows = len(grid)
+    columns = len(grid[0])
     
-    # x = [-1, -1, -1,  0, 0,  1, 1, 1]
-    # y = [-1,  0,  1, -1, 1, -1, 0, 1]
+    ocurrences = 0
 
-    # for dir in range(len(x)):
-    #     currX, currY = row + x[dir], col + y[dir]
+    wordLen = len(word)
+    reverseWord = word[::-1]
 
-    #     k = 1
+    for row in range(rows):
+        if wordLen + row > rows:
+            break
+        for col in range(columns):
+            if wordLen + col > columns:
+                break
 
-    #     while k < len(word):
+            mask = getMask(grid, row, col, 3)
 
-    #         if currX >= columns or currX < 0 or currY >= rows or currY < 0:
-    #             break
+            if mask[1][1] == word[1]:
+                diagonal = mask[0][0] + mask[1][1] + mask[2][2]
+                inverseDiagonal = mask[0][2] + mask[1][1] + mask[2][0]
 
-    #         if grid[currX][currY] != word[k]:
-    #             break
-
-    #         currX += x[dir]
-    #         currY += y[dir]
-    #         k += 1
-
-    #     if k == len(word):
-    #         return True
+                if (diagonal == word or diagonal == reverseWord) and (inverseDiagonal == word or inverseDiagonal == reverseWord):
+                    ocurrences += 1
     
-    # return False
+    return ocurrences
 
 def printResults(results):
     for result in results:
@@ -61,16 +108,18 @@ def printResults(results):
     print()
 
 if __name__ == "__main__":
-    input = getData("day4InputTest.txt")
-    #input = getData("day4Input.txt")
+    #input = getData("day4InputTest.txt")
+    input = getData("day4Input.txt")
 
     word = "XMAS"
-    wordBackwards = "SAMX"
 
     ans = searchWord(input, word)
-    ans.append(searchWord(input, wordBackwards))
 
-    printResults(ans)
+    print("\n\rPart 1 Results: ", ans)
 
-    print("\n\rResults: ", len(ans))
+    word = "MAS"
+
+    ans = searchXMases(input, word)
+
+    print("\n\rPart 2 Results: ", ans)
 
