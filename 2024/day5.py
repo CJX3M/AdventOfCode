@@ -15,27 +15,20 @@ def checkValidPage(currentPage, orderingRules):
                     return False
     return True
 
-def correctPageOrder(incorrectPage, orderingRules):
-    correctPage = []
+def correctPageOrder(currentPage, orderingRules):
 
-    for currentPageNumber in incorrectPage:
-        pageRules = [r for r in orderingRules if r[0] == currentPageNumber]
+    for currentNumber in currentPage:
+        pageRules = [r for r in orderingRules if r[0] == currentNumber]
         while pageRules:
             currentRule = pageRules.pop()
-            if currentRule[0] not in correctPage:
-                correctPage.append(currentRule[0])
-            if currentRule[1] in incorrectPage and currentRule[1] not in correctPage:
-                correctPage.append(currentRule[1])
-            elif currentRule[1] in incorrectPage:
-                ruleIndex = correctPage.index(currentRule[1])
-                currentPageIndex = correctPage.index(currentRule[0])
+            if currentRule[1] in currentPage:
+                ruleIndex = currentPage.index(currentRule[1])
+                currentPageIndex = currentPage.index(currentRule[0])
                 if currentPageIndex > ruleIndex:
-                    correctPage.remove(currentRule[0])
-                    correctPage.insert(ruleIndex, currentRule[0])
+                    currentPage.remove(currentRule[0])
+                    currentPage.insert(ruleIndex, currentRule[0])
 
-
-
-    return correctPage
+    return currentPage
 
 if __name__ == "__main__":
     # input = getData("day5inputtest.txt")
