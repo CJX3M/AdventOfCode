@@ -1,5 +1,6 @@
+import multiprocessing
 from openData import getData
-
+from copy import deepcopy
 # if lookForLoop comes True, I'll be looking for places to put obstacles and create a loop
 # if lookForLoop comes False, I'll put overStep to save positions where the guards pass by, and test for loop. if a position
 # appears 10, means the guard had pass by 10 times and its on a loop
@@ -29,12 +30,11 @@ def moveGuard(input, lookForLoop = False):
             return True
         guardPosition = [a + b for a, b in zip(guardPosition, directions[currentDirectionIndex])]
         nextStep = [a + b for a, b in zip(guardPosition, directions[currentDirectionIndex])]
-        if lookForLoop and lookObstaclesForLoop(input, guardPosition, directions[currentDirectionIndex+1 if currentDirectionIndex < 3 else 0]):
-            obstacleForLoop.append(nextStep)
         if 0 > nextStep[0] or nextStep[0] >= len(input) or 0 > nextStep[1] or nextStep[1] >= len(input[0]):            
-            updateGuardPosition(input, guardPosition, guardSteps)
+            updateGuardPosition(input, guardPosition, guardSteps, not lookForLoop)
             break
-
+        if lookForLoop and input[nextStep[0]][nextStep[1]] == '.' and lookObstaclesForLoop(input, guardPosition, directions[currentDirectionIndex+1 if currentDirectionIndex < 3 else 0]):
+            obstacleForLoop.append(nextStep)
         if input[nextStep[0]][nextStep[1]] == '#':
             currentDirectionIndex += 1
             if currentDirectionIndex == 4:
@@ -42,7 +42,26 @@ def moveGuard(input, lookForLoop = False):
     if not lookForLoop:
         return False
         
-    return { guardSteps, obstacleForLoop }
+    return (guardSteps, obstacleForLoop) 
+
+def testObstacles(map, obstacles):
+    loopObstacles = []
+
+    obstaclesCount = len(obstacles)
+
+    while obstacles:
+        obstacle = obstacles.pop()
+
+        print(f"\rTesting {len(obstacles)} out of {obstaclesCount}", end="")
+
+        map[obstacle[0]][obstacle[1]] = '#'
+
+        if moveGuard(deepcopy(map)):
+            loopObstacles.append(obstacle)
+
+        map[obstacle[0]][obstacle[1]] = '.'
+
+    return loopObstacles
 
 def updateGuardPosition(map, guard, guardSteps, overStep):
     map[guard[0]][guard[1]] = 'X'
@@ -59,13 +78,28 @@ def lookObstaclesForLoop(map, nextPosition, direction):
         if map[nextPosition[0]][nextPosition[1]] == '#':
             return True
 
+def divideInChunks(list, amount):
+
+    for i in range(0, len(list), amount):
+        yield list[i:i + amount]
+
 if __name__ == "__main__":
 
-    input = [list(r) for r in getData("day6TestInput.txt")]
+    #input = [list(r) for r in getData("day6TestInput.txt")]
 
-    #input = [list(r) for r in getData("day6Input.txt")]
+    input = [list(r) for r in getData("day6Input.txt")]
 
-    guardSteps, obstaclesForLoop = moveGuard(input, True)
+    guardSteps, obstaclesForLoop = moveGuard(deepcopy(input), True)
+
+    obstaclesForLoop = divideInChunks(obstaclesForLoop, 1000)
+
+    pool = multiprocessing.Pool()
+
+    resultsAsync = [pool.apply_async(testObstacles, args=(input, obstacles)) for obstacles in obstaclesForLoop]
+
+    #loopObstacles = testObstacles(input, obstaclesForLoop)
+
+    loopObstacles = [r.get() for r in resultsAsync]
 
     # corners = []
 
@@ -89,7 +123,7 @@ if __name__ == "__main__":
     #     addToPosibleObstacles(obstacleForLoop, corner, cornerA[0], cornerB[0])
     
     print("\n\rResult Part 1: ", len(guardSteps))
-    print("\n\rResult Part 2: ", len(obstaclesForLoop))
+    print("\n\rResult Part 2: ", len(loopObstacles))
 
 
 
