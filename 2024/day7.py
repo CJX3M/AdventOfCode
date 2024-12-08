@@ -15,7 +15,7 @@ def genCombinatiosOfN(n, arr, results, i):
 
 if __name__ == "__main__":
 
-    #input = getData("day7TestInput.txt")
+    # input = getData("day7TestInput.txt")
 
     input = getData("day7Input.txt")
 
@@ -25,14 +25,6 @@ if __name__ == "__main__":
 
     maxNumberOperators = max([len(i[1]) for i in equations])
 
-    operatorsCombinations = []
-
-    for i in range(maxNumberOperators):
-        if i == 0:
-            continue
-        combinations = [None] * i
-        genCombinatiosOfN(i, combinations, operatorsCombinations, 0)
-
     countEquations = len(equations)
 
     for index, eq in enumerate(equations):
@@ -40,7 +32,12 @@ if __name__ == "__main__":
 
         operationResult = False
 
-        operations = [i for i in operatorsCombinations if len(i) == len(eq[1])-1]
+        operations = []
+
+        gaps = len(eq[1]) - 1
+
+        combinations = [None] * gaps
+        genCombinatiosOfN(gaps, combinations, operations, 0)
 
         operationsIndex = 0
 
