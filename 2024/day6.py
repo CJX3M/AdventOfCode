@@ -4,25 +4,24 @@ from copy import deepcopy
 # if lookForLoop comes True, I'll be looking for places to put obstacles and create a loop
 # if lookForLoop comes False, I'll put overStep to save positions where the guards pass by, and test for loop. if a position
 # appears 10, means the guard had pass by 10 times and its on a loop
-def moveGuard(input, lookForLoop = False):
+def moveGuard(input, lookForLoop = False, guardPosition = [], currentDirection = []):
     directions = [[-1, 0],
                   [0, 1],
                   [1, 0],
                   [0, -1]]
     
-    currentDirectionIndex = 0
+    currentDirectionIndex = 0 if currentDirection == [] else directions.index(currentDirection)
 
     guardSteps = []
 
     obstacleForLoop = []
 
-    guardPosition = []
-        
-    for rowIndex, row in enumerate(input):
-        if '^' in row:
-            col = row.index('^')
-            guardPosition = [rowIndex, col]
-            break
+    if guardPosition == []:        
+        for rowIndex, row in enumerate(input):
+            if '^' in row:
+                col = row.index('^')
+                guardPosition = [rowIndex, col]
+                break
 
     while True:
         updateGuardPosition(input, guardPosition, guardSteps, not lookForLoop)
@@ -33,8 +32,9 @@ def moveGuard(input, lookForLoop = False):
         if 0 > nextStep[0] or nextStep[0] >= len(input) or 0 > nextStep[1] or nextStep[1] >= len(input[0]):            
             updateGuardPosition(input, guardPosition, guardSteps, not lookForLoop)
             break
-        if lookForLoop and input[nextStep[0]][nextStep[1]] == '.' and lookObstaclesForLoop(input, guardPosition, directions[currentDirectionIndex+1 if currentDirectionIndex < 3 else 0]):
-            obstacleForLoop.append(nextStep)
+        nextDirection = directions[currentDirectionIndex+1 if currentDirectionIndex < 3 else 0]
+        if lookForLoop and input[nextStep[0]][nextStep[1]] != '#' and lookObstaclesForLoop(input, guardPosition, nextDirection):
+            obstacleForLoop.append({"obstacle": nextStep, "direction": nextDirection})
         if input[nextStep[0]][nextStep[1]] == '#':
             currentDirectionIndex += 1
             if currentDirectionIndex == 4:
@@ -54,12 +54,19 @@ def testObstacles(map, obstacles):
 
         print(f"\rTesting {len(obstacles)} out of {obstaclesCount}", end="")
 
-        map[obstacle[0]][obstacle[1]] = '#'
+        obstacleCoords = obstacle["obstacle"]
+        direction = obstacle["direction"]
 
-        if moveGuard(deepcopy(map)):
-            loopObstacles.append(obstacle)
+        inverseDirection = [x * -1 for x in direction]
 
-        map[obstacle[0]][obstacle[1]] = '.'
+        guardStartinPos = [a + b for a, b in zip(obstacleCoords, inverseDirection)]
+
+        map[obstacleCoords[0]][obstacleCoords[1]] = '#'
+
+        if moveGuard(deepcopy(map), guardPosition=guardStartinPos, currentDirection=direction):
+            loopObstacles.append(obstacleCoords)
+
+        map[obstacleCoords[0]][obstacleCoords[1]] = '.'
 
     return loopObstacles
 
@@ -85,21 +92,21 @@ def divideInChunks(list, amount):
 
 if __name__ == "__main__":
 
-    #input = [list(r) for r in getData("day6TestInput.txt")]
+    input = [list(r) for r in getData("day6TestInput.txt")]
 
-    input = [list(r) for r in getData("day6Input.txt")]
+    #input = [list(r) for r in getData("day6Input.txt")]
 
     guardSteps, obstaclesForLoop = moveGuard(deepcopy(input), True)
 
-    obstaclesForLoop = divideInChunks(obstaclesForLoop, 1000)
+    #obstaclesForLoop = divideInChunks(obstaclesForLoop, 1000)
 
-    pool = multiprocessing.Pool()
+    # pool = multiprocessing.Pool()
 
-    resultsAsync = [pool.apply_async(testObstacles, args=(input, obstacles)) for obstacles in obstaclesForLoop]
+    # resultsAsync = [pool.apply_async(testObstacles, args=(input, obstacles)) for obstacles in obstaclesForLoop]
 
-    #loopObstacles = testObstacles(input, obstaclesForLoop)
+    loopObstacles = testObstacles(input, obstaclesForLoop)
 
-    loopObstacles = [r.get() for r in resultsAsync]
+    # loopObstacles = [r.get() for r in resultsAsync]
 
     # corners = []
 
