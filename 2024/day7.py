@@ -1,72 +1,91 @@
 from openData import getData
 from copy import deepcopy
 
-def genCombinatiosOfN(n, arr, results, i):
+def genCombinatiosOfN(n, arr, results, i, part2 = False):
 
     if i == n:
         results.append(deepcopy(arr))
         return
     
     arr[i] = "+"
-    genCombinatiosOfN(n, arr, results, i + 1)
+    genCombinatiosOfN(n, arr, results, i + 1, part2)
 
     arr[i] = "*"
-    genCombinatiosOfN(n, arr, results, i + 1)
+    genCombinatiosOfN(n, arr, results, i + 1, part2)
 
-if __name__ == "__main__":
+    if not part2:
+        return
+    
+    arr[i] = "||"
+    genCombinatiosOfN(n, arr, results, i + 1, part2)
 
-    # input = getData("day7TestInput.txt")
+def performCalc(eq, operations, part2 = False):
+    result = eq[0]
 
-    input = getData("day7Input.txt")
+    operationsIndex = 0
+    while True:
+        numbers = [int(i) for i in eq[1]]
 
-    equations =[[int(a), b.strip().split(' ')] for a, b in [e.split(":") for e in input]]
+        total = numbers.pop(0)
 
+        for i in range(len(operations[operationsIndex])):
+            if operations[operationsIndex][i] == '+':
+                total += numbers.pop(0)
+            elif operations[operationsIndex][i] == '*':
+                total *= numbers.pop(0)
+            elif operations[operationsIndex][i] == "||" and part2:
+                nextNumber = numbers.pop(0)
+                newNumber = str(total) + str(nextNumber)
+                total = int(newNumber)
+
+        if total == result:
+            return True
+
+        operationsIndex += 1
+
+        if operationsIndex == len(operations):
+            return False
+        
+def execute(equations, part2 = False):
     accepted = []
 
-    maxNumberOperators = max([len(i[1]) for i in equations])
+    notAccepted = []
 
     countEquations = len(equations)
 
     for index, eq in enumerate(equations):
-        result = eq[0]
-
-        operationResult = False
-
         operations = []
 
         gaps = len(eq[1]) - 1
 
         combinations = [None] * gaps
-        genCombinatiosOfN(gaps, combinations, operations, 0)
-
-        operationsIndex = 0
+        genCombinatiosOfN(gaps, combinations, operations, 0, part2)
 
         print(f"\rEquation {index+1} of {countEquations}", end="")
 
-        while not operationResult:
-            numbers = [int(i) for i in eq[1]]
+        if performCalc(eq, operations, part2):
+            accepted.append(eq[0])
+        else:
+            notAccepted.append(eq)
 
-            total = numbers.pop(0)
+    return (accepted, notAccepted)
 
-            for i in range(len(operations[operationsIndex])):
-                if operations[operationsIndex][i] == '+':
-                    total += numbers.pop(0)
-                elif operations[operationsIndex][i] == '*':
-                    total *= numbers.pop(0)
+if __name__ == "__main__":
 
-            operationResult = total == result
+    #input = getData("day7TestInput.txt")
 
-            operationsIndex += 1
+    input = getData("day7Input.txt")
 
-            if operationsIndex == len(operations):
-                break
+    equations =[[int(a), b.strip().split(' ')] for a, b in [e.split(":") for e in input]]
 
+    (accepted, notAccepted) = execute(equations)
 
-        if operationResult:
-            eq.append(operations[operationsIndex - 1])
-            accepted.append(eq)
+    print("\n\rResult part 1: ", sum(accepted))
 
-    print("\n\rResult part 1: ", sum([eq[0] for eq in accepted]))
+    countEquations = len(notAccepted)
 
+    (acceptedPart2, rejected) = execute(notAccepted, True)
+
+    print("\n\rResult part 2: ", sum(accepted) + sum(acceptedPart2))
         
 
