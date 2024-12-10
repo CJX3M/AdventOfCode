@@ -1,6 +1,9 @@
 from openData import getData
 from copy import deepcopy
 
+def inbound(antiNode):
+    return 0 <= antiNode[0] < maxRows and 0 <= antiNode[1] < maxCols
+
 def createAntinode(currentCoords, coords, distance, antiNodes, map, part2 = False):
     inverseDistance = [distance[0]*-1, distance[1]*-1]
     antenna1 = [a+b for a, b in zip(coords, inverseDistance)]
@@ -15,18 +18,17 @@ def createAntinode(currentCoords, coords, distance, antiNodes, map, part2 = Fals
         createAntinode(antenna2, antenna1, distance, antiNodes, map, True)
     
 def addAntinode(coord, antiNodes, map):
-    if coord[0] >= 0 and coord[0] < maxRows and coord[1] >= 0 and coord[1] < maxCols:
-        if map[coord[0]][coord[1]] == '.':
-            map[coord[0]][coord[1]] = '#'
-        if coord not in antiNodes:
-            antiNodes.append(coord)
-    else:
+    if not inbound(coord):
         return False
+    if map[coord[0]][coord[1]] == '.':
+        map[coord[0]][coord[1]] = '#'
+    if coord not in antiNodes:
+        antiNodes.append(coord)    
     return True
 
 
 if __name__ == "__main__":
-    # input = [list(r) for r in getData("day8testInput.txt")]
+    #input = [list(r) for r in getData("day8testInput.txt")]
 
     input = [list(r) for r in getData("day8Input.txt")]
 
@@ -48,19 +50,25 @@ if __name__ == "__main__":
 
     antiNodes = []
 
-    antenas = []    
+    antenas = 0
 
     for unique in uniqueFrequencies:
         if part2 and len(uniqueFrequencies[unique]) > 2:
+            antenas += len(uniqueFrequencies[unique])
             [antiNodes.append(deepcopy(coord)) for coord in uniqueFrequencies[unique] if coord not in antiNodes]
         while uniqueFrequencies[unique]:
             antenaDistances = []
             currentCoords = uniqueFrequencies[unique].pop(0)
+            input[currentCoords[0]][currentCoords[1]] = '*'
             for coords in uniqueFrequencies[unique]:
+                input[coords[0]][coords[1]] = '*'
                 distance = [currentCoords[0]-coords[0], currentCoords[1]-coords[1]]                                    
                 createAntinode(currentCoords, coords, distance, antiNodes, input, part2)
+                input[coords[0]][coords[1]] = unique
+            input[currentCoords[0]][currentCoords[1]] = unique
 
     for r in input:
+        antenas += r.count("#")
         print(f"\n\r{''.join(r)}", end='')
 
     print("\n\rResults: ", len(antiNodes))
