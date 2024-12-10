@@ -50,14 +50,10 @@ if __name__ == "__main__":
 
     antiNodes = []
 
-    antenas = 0
-
     for unique in uniqueFrequencies:
         if part2 and len(uniqueFrequencies[unique]) > 2:
-            antenas += len(uniqueFrequencies[unique])
             [antiNodes.append(deepcopy(coord)) for coord in uniqueFrequencies[unique] if coord not in antiNodes]
         while uniqueFrequencies[unique]:
-            antenaDistances = []
             currentCoords = uniqueFrequencies[unique].pop(0)
             input[currentCoords[0]][currentCoords[1]] = '*'
             for coords in uniqueFrequencies[unique]:
@@ -68,7 +64,6 @@ if __name__ == "__main__":
             input[currentCoords[0]][currentCoords[1]] = unique
 
     for r in input:
-        antenas += r.count("#")
         print(f"\n\r{''.join(r)}", end='')
 
     print("\n\rResults: ", len(antiNodes))
