@@ -14,10 +14,11 @@ def divideArray(arr):
 
 if __name__ == "__main__":
 
-    input = list(getData("day9InputTestSmall.txt")[0])
-    #input = list(getData("day9Input.txt")[0])
+    #input = list(getData("day9InputTestSmall.txt")[0])
+    input = getData("day9Input.txt")
+    memBlocks = list(input[0])
 
-    (filesBlocks, freeBlocks) = divideArray(input)
+    (filesBlocks, freeBlocks) = divideArray(memBlocks)
 
     files = ''
 
@@ -68,9 +69,6 @@ if __name__ == "__main__":
     #         block[-1-currentIndex] = '.'
     #         currentIndex += 1
     
-    checkSum = 0
-
-    for index, mem in enumerate(block):
-        checkSum += index * int(mem)
+    checkSum = sum([index * int(mem) for index, mem in enumerate(block)])
 
     print("Result: ", checkSum)
