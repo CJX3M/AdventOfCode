@@ -12,7 +12,7 @@ def getData(fileName):
 
 def getData(day, test):
     test = "Test" if test else ""
-    filename = f"{day}Input{test}.txt"
+    filename = f"day{day}Input{test}.txt"
     strPath = os.path.join(sys.path[0], filename)
     with open(strPath) as fileObject:
         data = fileObject.read().split('\n')

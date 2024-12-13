@@ -1,37 +1,49 @@
 from openData import getData
 from copy import deepcopy
+from functools import cache
 
-def performBlinks(input, blinks):
-    stones = []
-    blink = 1
-    while blink <= blinks:
-        print(f"\rBlink {blink}", end="")
+@cache
+def applyAction(stone):
+    if stone == 0:
+        return 1
+    elif len(str(stone)) % 2 == 0:
+        stone = str(stone)
+        midIndex = len(stone) // 2
+        return [int(stone[:midIndex]), (int(stone[midIndex:]))]
+    else:
+        return stone * 2024
+
+@cache
+def performBlinks(stone, blinks):
+    splits = 0
+    blink = 0
+    while blink < blinks:
+        stone = applyAction(stone)
+        if isinstance(stone, list):
+            splits += 1
+            stone1 = stone[1]
+            stone = stone[0]
+            splits += performBlinks(stone1, blinks-blink-1)
         blink += 1
-        if len(stones) > 0:
-            input = deepcopy(stones)
-            stones = []
-        for stone in input:
-            if stone == "0":
-                stones.append("1")
-            elif len(stone) % 2 == 0:
-                midIndex = len(stone) // 2
-                stones.append(str(int(stone[:midIndex])))
-                stones.append(str(int(stone[midIndex:])))
-            else:
-                stones.append(str(int(stone) * 2024))
-    return stones
+    return splits
 
 if __name__ == "__main__":
 
-    input = getData("day11", False)[0].split(' ')
+    input = [int(n) for n in getData("11", False)[0].split(' ')]
 
-    stones = performBlinks(input, 25)
+    stones = 0
 
-    print("Result part 1:", len(stones))
+    for stone in input:
+        stones += performBlinks(stone, 25)
 
-    stones = performBlinks(stones, 50)
+    print("Result part 1:", stones + len(input))
 
-    print("Result part 2: ", len(stones))
+    stones = 0
+
+    for stone in input:
+        stones += performBlinks(stone, 75)
+
+    print("Result part 2: ", stones + len(input))
 
 
 
