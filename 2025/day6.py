@@ -4,13 +4,25 @@ input = openData.getData(6, True)
 
 offset = 0
 
-for line in input:
-    for c in line:
-        if c != " ":
-            offset += 1
-        else:
-            break
-    
+matrix = []
+row = []
+currentCol = 0
+while currentCol < len(input[:-1]):
+    #usar la ultima linea de input para determinar el offset
+    for line in input:
+        if offset == 0:
+            for cIndex, c in enumerate(line):
+                if c == " ":
+                    offset += 1
+        row.append(line[currentCol:currentCol + offset])
+        # for c in range(0, len(line), offset + 1):
+        #     marker = line[c:offset + c]
+        #     row.append(marker)
+
+    matrix.append(row)
+    currentCol += offset + 1
+    offset = 0
+print(matrix)    
         
 
 
