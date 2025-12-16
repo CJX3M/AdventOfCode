@@ -25,45 +25,72 @@ for i in input:
         d = np.linalg.norm(i - j)
         box[key].append((nodeKey, d))
     box[key] = sorted(box[key], key=lambda x: x[1])
-    boxes.append((key, box[key]))
-    graph.append({
-        "node": key,
-        "closestNode": box[key][0][0] if box[key] else None,
-        "distance": round(box[key][0][1]) if box[key] else float('inf')
-    })
+    lowestDist = round(box[key][0][1])
+    lowestNodes = [n for n in box[key] if round(n[1]) == lowestDist]
+    for closestNode in lowestNodes:
+        graph.append({
+            "node": key,
+            "closestNode": closestNode[0],
+            "distance": lowestDist
+        })
 
 graph = sorted(graph, key=lambda x: x["distance"])
 
-#lets clean the graph. if n1 closest node is n2, and n2 closest node is n1, and they have the same distance, just add n1 
-cleanedGraph = []
+graph.reverse()
+connections = 10 if useTest else 1000
+prop = "node"
+
+# def addToCircuit(node, circuit, connections):
+#     if node[prop] in circuit or connections == 0:
+#         return circuit, connections
+#     connections -= 1
+#     circuit.append(node[prop])
+#     if (not any(n for n in graph if n[prop] == node["closestNode"])):
+#         return circuit, connections
+#     closestNode = next(n for n in graph if n[prop] == node["closestNode"])
+#     graph.remove(closestNode)
+#     return addToCircuit(closestNode, circuit, connections)
+
+# while graph:
+#     node = graph.pop()
+#     circuit = next((c for c in circuits if node[prop] in c or node["closestNode"] in c), [])
+#     found = True if circuit else False
+#     circuit, connections = addToCircuit(node, circuit, connections)
+#     if not found:
+#         circuits.append(circuit)
+#     if connections == 0:
+#         break
+# print("Circuits:", circuits)
+
 while graph:
-    node = graph.pop(0)
-    if any(n for n in cleanedGraph if n["node"] == node["node"]):
-        continue
-    closestNode = next((n for n in graph if n["node"] == node["closestNode"]), None)
-    if closestNode and closestNode["closestNode"] == node["node"] and closestNode["distance"] == node["distance"]:
-        cleanedGraph.append(node)
-        graph.remove(closestNode)
-    else:
-        cleanedGraph.append(node)
+    connection = False
 
-graph = cleanedGraph
-
-def addToCircuit(node, circuit):
-    if node in circuit:
-        return circuit
-    
-    circuit.append(node)
-    if (not any(n for n in graph if n["node"] == node["closestNode"])):
-        return circuit
-    closestNode = next(n for n in graph if n["node"] == node["closestNode"])
-    graph.remove(closestNode)
-    return addToCircuit(closestNode, circuit)
-
-while graph:
     node = graph.pop()
-    circuit = addToCircuit(node, [])
+    closestNode = next((n for n in graph if n[prop] == node["closestNode"]), None)
+
+    circuit = next((c for c in circuits if node[prop] in c or node["closestNode"] in c), None)
+    if circuit is None:
+        circuit = []
+        circuit.append(node[prop])
+        if closestNode:
+            circuit.append(closestNode[prop])
+        connection = True
+    else:
+        circuits.remove(circuit)
+        if node[prop] not in circuit:
+            circuit.append(node[prop])
+            connection = True
+        if closestNode and closestNode[prop] not in circuit:
+            circuit.append(closestNode[prop])
+            connection = True
+
+    if connection:
+        connections -= 1
+
     circuits.append(circuit)
+
+    if connections == 0:
+        break
 print("Circuits:", circuits)
 
 Part1 = ''
