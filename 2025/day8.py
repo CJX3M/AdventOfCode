@@ -5,7 +5,7 @@ from collections import defaultdict
 import networkx as nx
 import matplotlib.pyplot as plt
 
-useTest = False
+useTest = 1 == 0
 
 input = [np.array(list(map(int, row.split(',')))) for row in openData.getData(8, useTest)]
 
@@ -39,49 +39,29 @@ graph = sorted(graph, key=lambda x: x["distance"])
 
 connections = 10 if useTest else 1000
 
-all_nodes = set()
-for n in graph[:connections]:
-    all_nodes.add(n["node"])
-    all_nodes.add(n["closestNode"])
+adjacency = defaultdict(list)
+for edge in graph:
+    adjacency[edge["node"]].append(edge["closestNode"])
+    adjacency[edge["closestNode"]].append(edge["node"])
 
-parent = {key: key for key in all_nodes}
+def dfs(node, visited, component):
+    visited.add(node)
+    component.append(node)
+    for neighbor in adjacency[node]:
+        if neighbor not in visited:
+            dfs(neighbor, visited, component)
 
-def findSet(i):
-    return i if parent[i] == i else findSet(parent[i])
+visited = set()
+components = []
 
-def mergeSet(i, j):
-    parent[findSet(i)] = findSet(j)
+for node in list(adjacency):
+    if node not in visited:
+        component = []
+        dfs(node, visited, component)
+        components.append(component)
 
-for node, closestNode in [(n["node"], n["closestNode"]) for n in graph[:connections]]:
-    mergeSet(node, closestNode)
 
-circuits = defaultdict(int)
-for node in parent:
-    root = findSet(node)
-    circuits[root] += 1
-
-conns = sorted(circuits.values(), reverse=True)
-Part1 = math.prod(conns[:3])
+Part1 = math.prod(sorted([len(c) for c in components], reverse=True)[:3])
 print("Part 1:", Part1)
 Part2 = ''
 print("Part 2:", Part2)
-
-# Build the graph from your connections
-G = nx.Graph()
-for node, closestNode in [(n["node"], n["closestNode"]) for n in graph[:connections]]:
-    G.add_edge(node, closestNode)
-
-# Optionally, color nodes by their root
-colors = []
-roots = {node: findSet(node) for node in G.nodes}
-unique_roots = list(set(roots.values()))
-color_map = {root: i for i, root in enumerate(unique_roots)}
-for node in G.nodes:
-    colors.append(color_map[roots[node]])
-
-plt.figure(figsize=(12, 8))
-pos = nx.spring_layout(G, seed=42)  # or use nx.kamada_kawai_layout(G)
-nx.draw(G, pos, with_labels=False, node_color=colors, cmap=plt.cm.Set3, node_size=50, edge_color='gray')
-plt.title("Union-Find Tree Visualization")
-plt.show()
-
