@@ -2,6 +2,8 @@ import openData
 import numpy as np
 import math
 from collections import defaultdict
+import networkx as nx
+import matplotlib.pyplot as plt
 
 useTest = False
 
@@ -63,4 +65,23 @@ Part1 = math.prod(conns[:3])
 print("Part 1:", Part1)
 Part2 = ''
 print("Part 2:", Part2)
+
+# Build the graph from your connections
+G = nx.Graph()
+for node, closestNode in [(n["node"], n["closestNode"]) for n in graph[:connections]]:
+    G.add_edge(node, closestNode)
+
+# Optionally, color nodes by their root
+colors = []
+roots = {node: findSet(node) for node in G.nodes}
+unique_roots = list(set(roots.values()))
+color_map = {root: i for i, root in enumerate(unique_roots)}
+for node in G.nodes:
+    colors.append(color_map[roots[node]])
+
+plt.figure(figsize=(12, 8))
+pos = nx.spring_layout(G, seed=42)  # or use nx.kamada_kawai_layout(G)
+nx.draw(G, pos, with_labels=False, node_color=colors, cmap=plt.cm.Set3, node_size=50, edge_color='gray')
+plt.title("Union-Find Tree Visualization")
+plt.show()
 
