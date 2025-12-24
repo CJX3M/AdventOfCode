@@ -1,67 +1,49 @@
 import openData
-import numpy as np
 import math
 from collections import defaultdict
-import networkx as nx
-import matplotlib.pyplot as plt
 
 useTest = 1 == 0
 
-input = [np.array(list(map(int, row.split(',')))) for row in openData.getData(8, useTest)]
+input = [tuple(map(int, row.split(','))) for row in openData.getData(8, useTest)]
 
-box = dict()
+dist = []
 
-graph = []
-
-for i, ni in enumerate(input):
-    key = tuple(int(x) for x in ni)
-    box[key] = []
-    for j in range(i + 1, len(input)):
-        nj = input[j]
-        if np.array_equal(ni, nj):
-            continue
-        nodeKey = tuple(int(x) for x in nj)
-        if nodeKey in box and any(b[0] == key for b in box[nodeKey]):
-            continue
-        d = np.linalg.norm(ni - nj)
-        box[key].append((nodeKey, d))
-    if any(box[key]):        
-        lowestDist = round(min(d for _, d in box[key]))
-        lowestNodes = [n for n in box[key] if round(n[1]) == lowestDist]
-        for closestNode in lowestNodes:
-            graph.append({
-                "node": ",".join(str(x).strip() for x in key),
-                "closestNode": ",".join(str(x).strip() for x in closestNode[0]),
-                "distance": lowestDist
-            })
-
-graph = sorted(graph, key=lambda x: x["distance"])
+for i, (x1, y1, z1) in enumerate(input):
+    for j, (x2, y2, z2) in enumerate(input):
+        if i < j:
+            d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+            dist.append((d, i, j))
 
 connections = 10 if useTest else 1000
 
-adjacency = defaultdict(list)
-for edge in graph:
-    adjacency[edge["node"]].append(edge["closestNode"])
-    adjacency[edge["closestNode"]].append(edge["node"])
+parent = {key: key for key in range(len(input))}
 
-def dfs(node, visited, component):
-    visited.add(node)
-    component.append(node)
-    for neighbor in adjacency[node]:
-        if neighbor not in visited:
-            dfs(neighbor, visited, component)
+def findSet(i):
+    return i if parent[i] == i else findSet(parent[i])
 
-visited = set()
-components = []
+def mergeSet(i, j):
+    parent[findSet(i)] = findSet(j)
 
-for node in list(adjacency):
-    if node not in visited:
-        component = []
-        dfs(node, visited, component)
-        components.append(component)
+numConns = 0
 
+for conn, (d, i, j) in enumerate(sorted(dist)):
+    if conn == connections:
+        circuits = defaultdict(int)
+        for node in parent:
+            circuits[findSet(node)] += 1
+        conns = sorted(circuits.values(), reverse=True)
+        Part1 = math.prod(conns[:3])
+        print("Part 1:", Part1)
 
-Part1 = math.prod(sorted([len(c) for c in components], reverse=True)[:3])
-print("Part 1:", Part1)
-Part2 = ''
+    root_i = findSet(i)
+    root_j = findSet(j)
+    if root_i != root_j:
+        numConns += 1
+        mergeSet(i, j)
+        if numConns == len(input) - 1:
+            last_merge = (i, j)
+
+i, j = last_merge
+Part2 = input[i][0] * input[j][0]
 print("Part 2:", Part2)
+
