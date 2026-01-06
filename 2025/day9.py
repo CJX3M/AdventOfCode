@@ -10,29 +10,30 @@ Part2 = 0
 
 @cache
 def pointInPolygon(x, y):
-    vertices = len(points)
-
     inside = False
 
-    p1 = points[0]
-
-    for i in range(1, vertices + 1):
-        p2 = points[i % vertices]
-
-        if y > min(p1[1], p2[1]):
-            if y <= max(p1[1], p2[1]):
-                if x <= max(p1[0], p2[0]):
-                    xinters = int((y - p1[1]) * (p2[0] - p1[0]) / (p2[1] - p1[1]) + p1[0])
-                    if p1[0] == p2[0] or x <= xinters:
-                        inside = not inside
-        p1 = p2
+    for (x1, y1), (x2, y2) in zip(points, points[1:] + [points[0]]):
+        if (x == x1 == x2 
+            and min(y1, y2) <= y <= max(y1, y2)
+            or ( y == y1 == y2
+            and min(x1, x2) <= x <= max(x1, x2))
+        ):
+            return True  # on edge
+        if ((y1 > y) != (y2 > y)) and (x < (x2 - x1) * (y - y1) / (y2 - y1) + x1):
+            inside = not inside
 
     return inside
 
-def calculateArea(p1, p2):
-    x1, y1 = p1
-    x2, y2 = p2
-    return int((abs(x1 - x2) + 1) * (abs(y1 - y2) + 1))
+def edgeIntersectsSquare(x1, y1, x2, y2, sx1, sy1, sx2, sy2):
+
+    if y1 == y2:  # horizontal edge
+        if sy1 <= y1 <= sy2:
+            if max(x1, x2) > sx1 and min(x1, x2) < sx2:
+                return True
+    elif x1 == x2:  # vertical edge
+        if sx1 <= x1 <= sx2:
+            if max(y1, y2) > sy1 and min(y1, y2) < sy2:
+                return True
 
 def validSquare(x1, x2, y1, y2):
 
@@ -41,19 +42,22 @@ def validSquare(x1, x2, y1, y2):
 
     for x, y in [(x1, y1), (x1, y2), (x2, y1), (x2, y2)]:
         # check if the corner is part of the points 
-        if (x, y) not in points and not pointInPolygon(x, y):
+        if not pointInPolygon(x, y):
+            return False
+    for (ex1, ey1), (ex2, ey2) in zip(points, points[1:] + [points[0]]):
+        # check if any edge intersects with the square
+        if edgeIntersectsSquare(ex1, ey1, ex2, ey2, x1, y1, x2, y2):
             return False
         
     return True
 
 for i, (x1, y1) in enumerate(points):
      for j, (x2, y2) in enumerate(points):
-          if i == j:
-               continue
-          area = calculateArea((x1, y1), (x2, y2))
-          Part1 = max(Part1, area)
-          if area > Part2 and validSquare(int(x1), int(x2), int(y1), int(y2)):
-               Part2 = area
+          if i < j:
+            area = (abs(x1 - x2) + 1) * (abs(y1 - y2) + 1)
+            Part1 = max(Part1, area)
+            if area > Part2 and validSquare(x1, x2, y1, y2):
+                Part2 = area
 
 print("Part 1:", Part1)
 
@@ -138,4 +142,5 @@ print("Part 1:", Part1)
 print("Part 2:", Part2)
 
 # 158357832 is not the answer
+# 420179376
 # 4623743592 is too high
