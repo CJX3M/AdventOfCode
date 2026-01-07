@@ -12,12 +12,11 @@ Part2 = 0
 def pointInPolygon(x, y):
     inside = False
 
-    for (x1, y1), (x2, y2) in zip(points, points[1:] + [points[0]]):
+    for (x1, y1), (x2, y2) in zip(points, points[1:] + points[:1]):
         if (x == x1 == x2 
             and min(y1, y2) <= y <= max(y1, y2)
             or ( y == y1 == y2
-            and min(x1, x2) <= x <= max(x1, x2))
-        ):
+            and min(x1, x2) <= x <= max(x1, x2))):
             return True  # on edge
         if ((y1 > y) != (y2 > y)) and (x < (x2 - x1) * (y - y1) / (y2 - y1) + x1):
             inside = not inside
@@ -27,11 +26,11 @@ def pointInPolygon(x, y):
 def edgeIntersectsSquare(x1, y1, x2, y2, sx1, sy1, sx2, sy2):
 
     if y1 == y2:  # horizontal edge
-        if sy1 <= y1 <= sy2:
+        if sy1 < y1 < sy2:
             if max(x1, x2) > sx1 and min(x1, x2) < sx2:
                 return True
     elif x1 == x2:  # vertical edge
-        if sx1 <= x1 <= sx2:
+        if sx1 < x1 < sx2:
             if max(y1, y2) > sy1 and min(y1, y2) < sy2:
                 return True
 
@@ -44,7 +43,7 @@ def validSquare(x1, x2, y1, y2):
         # check if the corner is part of the points 
         if not pointInPolygon(x, y):
             return False
-    for (ex1, ey1), (ex2, ey2) in zip(points, points[1:] + [points[0]]):
+    for (ex1, ey1), (ex2, ey2) in zip(points, points[1:] + points[:1]):
         # check if any edge intersects with the square
         if edgeIntersectsSquare(ex1, ey1, ex2, ey2, x1, y1, x2, y2):
             return False
